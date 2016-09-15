@@ -2,6 +2,7 @@
 
 import socket, sys, subprocess
 from datetime import datetime
+from scapy.all import *
 
 def scan_tcp(ip):
   # Simple tries to complete a tcp connection with a port
@@ -49,7 +50,16 @@ def scan_udp(ip):
     print "You pressed Ctrl+C"
     sys.exit()
 
+def syn_scan(ip):
+  SYN_FLAG = 2
 
+  syn_pkt = IP(dst=ip)/TCP(flags=SYN_FLAG, dport=range(1,1025), sport=RandShort())
+  try:
+    ans, unans = sr(syn_pkt, verbose=0)
+    ans.summary(lfilter = lambda (s,r): r.sprintf("%TCP.flags%") == "SA",prn=lambda(s,r):r.sprintf("%TCP.sport% \t open"))
+  except KeyboardInterrupt:
+    print "You pressed ctrl-C"
+    sys.exit()
 
 def main():
   addr = sys.argv[2]
@@ -61,7 +71,8 @@ def main():
 	  scan_tcp(IP)
   elif sys.argv[1] == '-d':
 	  scan_udp(IP)
-
+  elif sys.argv[1] == '-sn':
+    syn_scan(IP)
   t2 = datetime.now()
   total =  t2 - t1
 

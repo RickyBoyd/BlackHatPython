@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-import socket, sys
+import socket
 import sys
 from scapy.all import *
 
