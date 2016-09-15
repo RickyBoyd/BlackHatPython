@@ -4,6 +4,8 @@ import socket, sys, subprocess
 from datetime import datetime
 
 def scan_tcp(ip):
+  # Simple tries to complete a tcp connection with a port
+  # Can often be blocked by firewalls especially if you are doing a portsweep
 	try:
 		for port in range(1,1025):
 			s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -24,6 +26,10 @@ def scan_tcp(ip):
 
 def scan_udp(ip):
   print 'udp scan'
+  # UDP scans send a UDP packet to a port and listen for an ICMP packet stating the port is closed
+  # if this packet is not received then either:
+  #   1. The port is open
+  #   2. The firewall filtered out the packet
   try:
     for port in range(1,1025):
       socket_recv = socket.socket(socket.AF_INET, socket.SOCK_RAW, socket.IPPROTO_ICMP)
@@ -44,21 +50,22 @@ def scan_udp(ip):
     sys.exit()
 
 
-addr = sys.argv[2]
-IP   = socket.gethostbyname(addr)
 
+def main():
+  addr = sys.argv[2]
+  IP   = socket.gethostbyname(addr)
 
+  t1 = datetime.now()
 
-t1 = datetime.now()
+  if sys.argv[1] == '-s':
+	  scan_tcp(IP)
+  elif sys.argv[1] == '-d':
+	  scan_udp(IP)
 
-if sys.argv[1] == '-s':
-	scan_tcp(IP)
-elif sys.argv[1] == '-d':
-	scan_udp(IP)
+  t2 = datetime.now()
+  total =  t2 - t1
 
-t2 = datetime.now()
-total =  t2 - t1
+  # Printing the information to screen
+  print 'Scanning Completed in: ', total
 
-# Printing the information to screen
-print 'Scanning Completed in: ', total
-
+main()
