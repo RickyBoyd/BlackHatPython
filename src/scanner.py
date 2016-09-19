@@ -8,12 +8,12 @@ def scan_tcp(ip):
   # Simple tries to complete a tcp connection with a port
   # Can often be blocked by firewalls especially if you are doing a portsweep
 	try:
-		for port in range(1,1025):
-			s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-			result = s.connect_ex((ip, port))
-			if result == 0:
-				print "Port {}: 	 Open".format(port)
-			s.close()
+	  for port in range(1,1025):
+	    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            result = s.connect_ex((ip, port))
+	    if result == 0:
+	      print "Port {}: 	 Open".format(port)
+	      s.close()
 	except KeyboardInterrupt:
 	    print "Ctrl+C pressed"
 	    sys.exit()
@@ -61,6 +61,21 @@ def syn_scan(ip):
     print "You pressed ctrl-C"
     sys.exit()
 
+def fin_scan(ip):
+  #will not work on microsfot OS's as they do not implement proper TCP behaviour
+  #open ports are supposed to ignore a fin packet from a non-connected source
+  #closed ports reply with a RST packet
+  FIN_FLAG = 1
+  fin_pkt = IP(dst=ip) / TCP(flags=FIN_FLAG, dport=range(1, 1024), sport=RandShort())
+  try:
+    ans, unans = sr(fin_pkt, timeout=0.1, verbose = 0)
+    for s in unans:
+      print "Port {}:	Open".format(s[TCP].dport)
+  except KeyboardInterrupt:
+    print "You pressed ctrl-C"
+    sys.exit()
+
+
 def main():
   addr = sys.argv[2]
   IP   = socket.gethostbyname(addr)
@@ -73,6 +88,8 @@ def main():
 	  scan_udp(IP)
   elif sys.argv[1] == '-sn':
     syn_scan(IP)
+  elif sys.argv[1] == '-fn':
+    fin_scan(IP)
   t2 = datetime.now()
   total =  t2 - t1
 
