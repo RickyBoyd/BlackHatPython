@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-import socket, sys, subprocess
+import socket, sys, subprocess, argparse
 from datetime import datetime
 from scapy.all import *
 
@@ -62,7 +62,7 @@ def syn_scan(ip):
     sys.exit()
 
 def fin_scan(ip):
-  #will not work on microsfot OS's as they do not implement proper TCP behaviour
+  #will not work on microsoft OS's as they do not implement proper TCP behaviour
   #open ports are supposed to ignore a fin packet from a non-connected source
   #closed ports reply with a RST packet
   FIN_FLAG = 1
@@ -77,18 +77,27 @@ def fin_scan(ip):
 
 
 def main():
-  addr = sys.argv[2]
-  IP   = socket.gethostbyname(addr)
+  #IP   = socket.gethostbyname(addr)
 
   t1 = datetime.now()
 
-  if sys.argv[1] == '-s':
+  parser = argparse.ArgumentParser(description="Scan a given port with a chosen method")
+  parser.add_argument('-s', action='store_true', help='A TCP scan, completes 3-way handshake then disconnects.')
+  parser.add_argument('-d', action='store_true', help='A UDP port scan, closed UDP ports reply with an ICMP error packet.')
+  parser.add_argument('-y', action='store_true', help='A SYN scan, an open port will acknowledge the packet.')
+  parser.add_argument('-f', action='store_true', help='A FIN scan, open ports will ignore this packet except on Windows.')
+  parser.add_argument('ip_address', metavar='IP', help='target IP address')
+  args = parser.parse_args()
+  
+  IP = socket.gethostbyname(args.ip_address)
+
+  if args.s:
 	  scan_tcp(IP)
-  elif sys.argv[1] == '-d':
+  elif args.d:
 	  scan_udp(IP)
-  elif sys.argv[1] == '-sn':
+  elif args.y:
     syn_scan(IP)
-  elif sys.argv[1] == '-fn':
+  elif args.f:
     fin_scan(IP)
   t2 = datetime.now()
   total =  t2 - t1
