@@ -1,5 +1,2 @@
-All scripts must be run as super user.
+All scripts must be run as super user and all scripts require scapy to be installed (http://www.secdev.org/projects/scapy/doc/installation.html.)
 
-scanner.py - nothing to be installed, should just work
-
-arpspoof.py - must install scapy, this can be done using apt-get install
