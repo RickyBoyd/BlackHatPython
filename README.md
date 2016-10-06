@@ -1,6 +1,8 @@
+# Black Hat Python
+Set of scripts I am writing in order to learn more about python, networking and networking security.
 All scripts must be run as super user and all scripts require scapy to be installed (http://www.secdev.org/projects/scapy/doc/installation.html.)
 
-Ideas for next scripts:\n
-1. Automatic banner grabbing\n
-2. LAN IP scanner\n
+Ideas for expansion:
+1. Automatic banner grabbing
+2. LAN IP scanner
 
