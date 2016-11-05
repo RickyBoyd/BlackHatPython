@@ -4,6 +4,12 @@ import socket, sys, subprocess, argparse
 from datetime import datetime
 from scapy.all import *
 
+def ip_scan(IP, args):
+    if IP == "default":
+        IP = "192.168.1.0/24"
+    ans, unans = srp(Ether(dst="ff:ff:ff:ff:ff:ff")/ARP(pdst="192.168.1.0/24"), timeout=2 ) 
+    ans.summary(lambda(s,r) : r.sprintf("%IP.src% %ARP.psrc%"))
+
 def scan_tcp(ip):
   # Simple tries to complete a tcp connection with a port
   # Can often be blocked by firewalls especially if you are doing a portsweep
@@ -77,32 +83,32 @@ def fin_scan(ip):
 
 
 def main():
-  #IP   = socket.gethostbyname(addr)
+    #IP   = socket.gethostbyname(addr)
+    t1 = datetime.now()
+    parser = argparse.ArgumentParser(description="Scan a given port with a chosen method")
+    parser.add_argument('-i', action='store_true', help='Scans a given subnet or default subnet if "default" given')
+    parser.add_argument('-s', action='store_true', help='A TCP scan, completes 3-way handshake then disconnects.')
+    parser.add_argument('-d', action='store_true', help='A UDP port scan, closed UDP ports reply with an ICMP error packet.')
+    parser.add_argument('-y', action='store_true', help='A SYN scan, an open port will acknowledge the packet.')
+    parser.add_argument('-f', action='store_true', help='A FIN scan, open ports will ignore this packet except on Windows.')
+    parser.add_argument('ip_address', metavar='IP', help='target IP address')
+    args = parser.parse_args()
+    
+    IP = socket.gethostbyname(args.ip_address)
+    if args.i:
+        ip_scan(IP, args)
+    if args.s:
+        scan_tcp(IP)
+    elif args.d:
+        scan_udp(IP)
+    elif args.y:
+        syn_scan(IP)
+    elif args.f:
+        fin_scan(IP)
+    t2 = datetime.now()
+    total =  t2 - t1
 
-  t1 = datetime.now()
-
-  parser = argparse.ArgumentParser(description="Scan a given port with a chosen method")
-  parser.add_argument('-s', action='store_true', help='A TCP scan, completes 3-way handshake then disconnects.')
-  parser.add_argument('-d', action='store_true', help='A UDP port scan, closed UDP ports reply with an ICMP error packet.')
-  parser.add_argument('-y', action='store_true', help='A SYN scan, an open port will acknowledge the packet.')
-  parser.add_argument('-f', action='store_true', help='A FIN scan, open ports will ignore this packet except on Windows.')
-  parser.add_argument('ip_address', metavar='IP', help='target IP address')
-  args = parser.parse_args()
-  
-  IP = socket.gethostbyname(args.ip_address)
-
-  if args.s:
-	  scan_tcp(IP)
-  elif args.d:
-	  scan_udp(IP)
-  elif args.y:
-    syn_scan(IP)
-  elif args.f:
-    fin_scan(IP)
-  t2 = datetime.now()
-  total =  t2 - t1
-
-  # Printing the information to screen
-  print 'Scanning Completed in: ', total
+    # Printing the information to screen
+    print 'Scanning Completed in: ', total
 
 main()
